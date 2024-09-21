@@ -88,18 +88,14 @@ export function Page() {
         ],
       }),
     })
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log(data.choices[0].message.content);
-      setTitle(data.choices[0].message.content);
-    }
+    const data = await response.json();
+    setTitle(data.choices[0].message.content);
   }
 
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto h-screen text-black-100">
       <h1 className="text-2xl font-bold text-center mb-4 pt-6">{title.replaceAll("\"", "")}</h1>
-      
+
       <div className="flex-grow overflow-auto scrollbar-hide mb-4 px-4">
         {messages.map(m => (
           <div key={m.id} className="mb-4">
@@ -127,8 +123,8 @@ export function Page() {
           minRows={1}
           maxRows={10}
         />
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="w-full px-4 py-2 text-black-600 rounded hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
         >
           Send
