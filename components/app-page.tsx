@@ -1,14 +1,21 @@
 'use client'
 
 import { useChat, Message } from 'ai/react'
-import { useRef, useEffect, useState } from 'react'
+import { HTMLProps, useRef, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { ClipboardIcon, CheckIcon } from 'lucide-react'
 import TextareaAutosize from 'react-textarea-autosize'
 
-const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
+
+interface CodeBlockProps extends HTMLProps<HTMLElement> {
+  inline?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+const CodeBlock = ({ inline, className, children, ...props }: CodeBlockProps) => {
   const match = /language-(\w+)/.exec(className || '')
   const [copied, setCopied] = useState(false)
 
@@ -18,32 +25,34 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  return !inline && match ? (
-    <div className="relative">
-      <button
-        onClick={copyToClipboard}
-        className="absolute top-2 right-2 p-2 rounded-md text-black-200 transition-colors"
-      >
-        {copied ? <CheckIcon size={16} /> : <ClipboardIcon size={16} />}
-      </button>
-      <SyntaxHighlighter
-        style={vscDarkPlus}
-        language={match[1]}
-        PreTag="div"
-        {...props}
-      >
-        {String(children).replace(/\n$/, '')}
-      </SyntaxHighlighter>
-    </div>
-  ) : (
+  if (!inline && match) {
+    const syntaxHighlighterProps = {
+      style: vscDarkPlus,
+      language: match[1],
+      PreTag: "div" as const,
+      children: String(children).replace(/\n$/, '')      
+    }
+    return (
+      <div className="relative">
+        <button
+          onClick={copyToClipboard}
+          className="absolute top-2 right-2 p-2 rounded-md text-black-200 transition-colors"
+        >
+          {copied ? <CheckIcon size={16} /> : <ClipboardIcon size={16} />}
+        </button>
+        <SyntaxHighlighter {...syntaxHighlighterProps} />
+      </div>
+    )
+  }
+  return (
     <code className={className} {...props}>
       {children}
     </code>
-  )
+  ) 
 }
 
 export function Page() {
-  const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat()
+  const { messages, input, handleInputChange, handleSubmit } = useChat()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [title, setTitle] = useState("LLM Client")
@@ -55,20 +64,20 @@ export function Page() {
 
   useEffect(() => {
     if (messages.length === 3 && !hasFirstExchange) {
-      setHasFirstExchange(true)
-      getTitle(messages)
+      setHasFirstExchange(true);
+      getTitle(messages);
     }
   }, [messages, hasFirstExchange])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit(e as any)
+      e.preventDefault();
+      handleSubmit(e);
     }
   }
 
   const getTitle = async (messages: Message[]) => {
-    const msgs: Object[] = [];
+    const msgs: object[] = [];
     messages.forEach((m) => msgs.push({
       role: m.role,
       content: m.content
@@ -102,7 +111,7 @@ export function Page() {
             <strong className="text-black-300">{m.role === 'user' ? 'User: ' : 'AI: '}</strong>
             <ReactMarkdown
               components={{
-                code: CodeBlock
+                code: CodeBlock, 
               }}
             >
               {m.content}
