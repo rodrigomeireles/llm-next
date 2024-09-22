@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useState, useContext } from 'react'
-import { ModelSettings } from './ModelSettings'
+import { ModelSettings } from './model-settings'
 
 const ModelSettingsContext = createContext<{
   settings: ModelSettings
