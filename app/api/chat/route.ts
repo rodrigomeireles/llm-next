@@ -12,14 +12,16 @@ const openai = new OpenAIApi(config)
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
-  console.log(messages);
+  const { messages, temperature, topP } = await req.json();
+  console.log(messages, temperature, topP);
 
   // Ask Groq for a streaming chat completion given the prompt
   const response = await openai.createChatCompletion({
     model: 'mixtral-8x7b-32768',
     stream: true,
     messages,
+    temperature: temperature,
+    top_p: topP,
   });
 
   // Convert the response into a friendly text-stream

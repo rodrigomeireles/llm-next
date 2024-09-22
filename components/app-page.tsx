@@ -5,8 +5,12 @@ import { HTMLProps, useRef, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { ClipboardIcon, CheckIcon } from 'lucide-react'
+import { ClipboardIcon, CheckIcon, Settings } from 'lucide-react'
 import TextareaAutosize from 'react-textarea-autosize'
+import { useModelSettings, ModelSettingsProvider } from './components-model-settings-provider'
+import { ModelSettings } from './model-settings'
+import { Dialog, DialogContent, DialogTrigger } from './ui/dialog'
+import { Button } from './ui/button'
 
 
 interface CodeBlockProps extends HTMLProps<HTMLElement> {
@@ -51,8 +55,20 @@ const CodeBlock = ({ inline, className, children, ...props }: CodeBlockProps) =>
   ) 
 }
 
+
 export function Page() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat()
+  return (
+    <ModelSettingsProvider>
+      <ChatComponent />
+    </ModelSettingsProvider>
+  )
+}
+
+function ChatComponent() {
+  const { settings, setSettings } = useModelSettings()
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    body: { temperature: settings.temperature, topP: settings.topP },
+  })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [title, setTitle] = useState("LLM Client")
@@ -92,7 +108,7 @@ export function Page() {
           ...msgs,
           {
             role: 'user',
-            content: 'Based on our conversation, suggest a short and concise title for this chat (max 5 words).',
+            content: 'Based on our conversation, suggest a short and concise title for this chat (max 5 words), keep the original language.',
           },
         ],
       }),
@@ -103,6 +119,21 @@ export function Page() {
 
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto h-screen text-black-100">
+      <div className="absolute top-4 right-4 z-10">
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="icon" aria-label="Open settings">
+            <Settings className='h-4 w-4'/>
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <ModelSettings
+            settings={settings}
+            onSettingsChange={setSettings}
+          />
+        </DialogContent>
+      </Dialog>
+      </div>
       <h1 className="text-2xl font-bold text-center mb-4 pt-6">{title.replaceAll("\"", "")}</h1>
 
       <div className="flex-grow overflow-auto scrollbar-hide mb-4 px-4">
@@ -139,6 +170,6 @@ export function Page() {
           Send
         </button>
       </form>
-    </div>
+      </div>
   )
 }
