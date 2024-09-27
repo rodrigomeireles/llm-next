@@ -67,7 +67,11 @@ export function Page() {
 function ChatComponent() {
   const { settings, setSettings } = useModelSettings()
   const { messages, input, handleInputChange, handleSubmit } = useChat({
-    body: { temperature: settings.temperature, topP: settings.topP },
+    body: { 
+      model: settings.modelName,
+      temperature: settings.temperature,
+      topP: settings.topP
+    },
   })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)

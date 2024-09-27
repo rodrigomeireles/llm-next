@@ -1,13 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useModelSettings } from './components-model-settings-provider'
 
 export interface ModelSettings {
   temperature: number
   topP: number
+  modelName: string
 }
 
 interface ModelSettingsProps {
@@ -17,8 +20,13 @@ interface ModelSettingsProps {
 
 export function ModelSettings({ settings, onSettingsChange }: ModelSettingsProps) {
   const [localSettings, setLocalSettings] = useState<ModelSettings>(settings)
+  const { availableModels, isLoading } = useModelSettings()
 
-  const handleSettingChange = (setting: keyof ModelSettings, value: number) => {
+  useEffect(() => {
+    setLocalSettings(settings)
+  }, [settings])
+
+  const handleSettingChange = (setting: keyof ModelSettings, value: number | string) => {
     const newSettings = { ...localSettings, [setting]: value }
     setLocalSettings(newSettings)
     onSettingsChange(newSettings)
@@ -30,6 +38,29 @@ export function ModelSettings({ settings, onSettingsChange }: ModelSettingsProps
         <CardTitle>Model Settings</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="model">Model</Label>
+          <Select
+            disabled={isLoading}
+            value={localSettings.modelName}
+            onValueChange={(value) => handleSettingChange('modelName', value)}
+          >
+            <SelectTrigger id="model">
+              <SelectValue placeholder="Select a model" />
+            </SelectTrigger>
+            <SelectContent>
+              {isLoading ? (
+                <SelectItem value="loading">Loading models...</SelectItem>
+              ) : (
+                availableModels.map((model) => (
+                  <SelectItem key={model} value={model}>
+                    {model}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="temperature">Temperature: {localSettings.temperature.toFixed(2)}</Label>
           <Slider
