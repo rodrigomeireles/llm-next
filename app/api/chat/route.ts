@@ -2,8 +2,6 @@ import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
 
-console.log(process.env.GROQ_API_KEY);
-
 // Create an OpenAI API client (that's edge friendly!)
 const config = new Configuration({
   apiKey: process.env.GROQ_API_KEY,

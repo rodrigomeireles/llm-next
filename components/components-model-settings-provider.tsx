@@ -36,7 +36,6 @@ export function ModelSettingsProvider({ children }: { children: React.ReactNode 
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    console.log(process.env.GROQ_API_KEY);
     async function fetchModels() {
       try {
         const getModels = await fetch("/api/models");
